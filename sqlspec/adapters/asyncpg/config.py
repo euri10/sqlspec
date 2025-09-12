@@ -225,7 +225,12 @@ class AsyncpgConfig(AsyncDatabaseConfig[AsyncpgConnection, "Pool[Record]", Async
         """
         if not self.pool_instance:
             self.pool_instance = await self.create_pool()
-        return self.pool_instance
+        try:
+            yield self.pool_instance
+        finally:
+            self.pool_instance.terminate()
+            await self.pool_instance.close()
+
 
     def get_signature_namespace(self) -> "dict[str, type[Any]]":
         """Get the signature namespace for AsyncPG types.
