@@ -193,8 +193,8 @@ class AsyncpgConfig(AsyncDatabaseConfig[AsyncpgConnection, "Pool[Record]", Async
             self.pool_instance = await self._create_pool()
         connection = None
         try:
-            connection = await self.pool_instance.acquire()
-            yield connection
+            async with self.pool_instance.acquire() as connection:
+                yield connection
         finally:
             if connection is not None:
                 await self.pool_instance.release(connection)
